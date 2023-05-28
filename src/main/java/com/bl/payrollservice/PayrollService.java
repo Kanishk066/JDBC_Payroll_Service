@@ -32,40 +32,28 @@ public class PayrollService {
     private PreparedStatement preparedStatement;
     private Map<String, PreparedStatement> preparedStatementCache = new HashMap<>();
 
-    public List<EmployeePayroll> getEmployeePayrollData() throws PayrollServiceException {
+    public List<EmployeePayroll> getEmployeesByDateRange(LocalDate startDate, LocalDate endDate) throws PayrollServiceException {
         List<EmployeePayroll> employeePayrollList = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            String selectSql = "SELECT id, name, salary, start_date FROM employee_payroll";
+            String selectSql = "SELECT id, name, salary, start_date FROM employee_payroll WHERE start_date BETWEEN ? AND ?";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setDate(1, Date.valueOf(startDate));
+            statement.setDate(2, Date.valueOf(endDate));
 
-            // Check if the PreparedStatement is already cached
-            if (preparedStatementCache.containsKey(selectSql)) {
-                preparedStatement = preparedStatementCache.get(selectSql);
-            } else {
-                preparedStatement = connection.prepareStatement(selectSql);
-                preparedStatementCache.put(selectSql, preparedStatement);
-            }
-
-            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 double salary = resultSet.getDouble("salary");
-                LocalDate startDate = resultSet.getDate("start_date").toLocalDate();
+                LocalDate joinDate = resultSet.getDate("start_date").toLocalDate();
 
-                EmployeePayroll employeePayroll = new EmployeePayroll(id, name, salary, startDate);
+                EmployeePayroll employeePayroll = new EmployeePayroll(id, name, salary, joinDate);
                 employeePayrollList.add(employeePayroll);
-
-                // Update the salary for Terisa if her name matches
-                if (name.equalsIgnoreCase("Terisa")) {
-                    double newSalary = 3000000.00;
-                    employeePayroll.setSalary(newSalary);
-                    updateEmployeeSalary(name, newSalary);
-                }
             }
         } catch (SQLException e) {
-            throw new PayrollServiceException("Error retrieving employee payroll data", e);
+            throw new PayrollServiceException("Error retrieving employee data by date range", e);
         }
 
         return employeePayrollList;
@@ -97,10 +85,10 @@ public class PayrollService {
     public static void main(String[] args) {
         PayrollService payrollService = new PayrollService();
         try {
-            List<EmployeePayroll> employeePayrollList = payrollService.getEmployeePayrollData();
-            for (EmployeePayroll employeePayroll : employeePayrollList) {
-                System.out.println(employeePayroll);
-            }
+            LocalDate startDate = LocalDate.of(2023, 5, 1);
+            LocalDate endDate = LocalDate.of(2023, 5, 10);
+            List<EmployeePayroll> employees = payrollService.getEmployeesByDateRange(startDate, endDate);
+
         } catch (PayrollServiceException e) {
             e.printStackTrace();
         }
