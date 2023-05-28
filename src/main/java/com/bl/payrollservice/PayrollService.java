@@ -39,8 +39,9 @@ public class PayrollService {
 
                 // Update the salary for Terisa if her name matches
                 if (name.equalsIgnoreCase("Terisa")) {
-                    employeePayroll.setSalary(3000000.00);
-                    updateEmployeeSalary(name, employeePayroll.getSalary());
+                    double newSalary = 3000000.00;
+                    employeePayroll.setSalary(newSalary);
+                    updateEmployeeSalary(name, newSalary);
                 }
             }
 
@@ -66,7 +67,6 @@ public class PayrollService {
             throw new PayrollServiceException("Error updating employee salary", e);
         }
     }
-
     public static void main(String[] args) {
         PayrollService payrollService = new PayrollService();
         try {
