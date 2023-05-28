@@ -82,6 +82,96 @@ public class PayrollService {
             throw new PayrollServiceException("Error updating employee salary", e);
         }
     }
+
+    public double getSumOfSalariesByGender(String gender) throws PayrollServiceException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String selectSql = "SELECT SUM(salary) FROM employee_payroll WHERE gender = ? GROUP BY gender";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setString(1, gender);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            throw new PayrollServiceException("Error calculating sum of salaries by gender", e);
+        }
+
+        return 0;
+    }
+
+    public double getAverageSalaryByGender(String gender) throws PayrollServiceException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String selectSql = "SELECT AVG(salary) FROM employee_payroll WHERE gender = ? GROUP BY gender";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setString(1, gender);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            throw new PayrollServiceException("Error calculating average salary by gender", e);
+        }
+
+        return 0;
+    }
+
+    public double getMinimumSalaryByGender(String gender) throws PayrollServiceException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String selectSql = "SELECT MIN(salary) FROM employee_payroll WHERE gender = ? GROUP BY gender";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setString(1, gender);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            throw new PayrollServiceException("Error calculating minimum salary by gender", e);
+        }
+
+        return 0;
+    }
+
+    public double getMaximumSalaryByGender(String gender) throws PayrollServiceException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String selectSql = "SELECT MAX(salary) FROM employee_payroll WHERE gender = ? GROUP BY gender";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setString(1, gender);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            throw new PayrollServiceException("Error calculating maximum salary by gender", e);
+        }
+
+        return 0;
+    }
+
+    public int getEmployeeCountByGender(String gender) throws PayrollServiceException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String selectSql = "SELECT COUNT(*) FROM employee_payroll WHERE gender = ? GROUP BY gender";
+            PreparedStatement statement = connection.prepareStatement(selectSql);
+            statement.setString(1, gender);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new PayrollServiceException("Error calculating employee count by gender", e);
+        }
+
+        return 0;
+    }
     public static void main(String[] args) {
         PayrollService payrollService = new PayrollService();
         try {
@@ -91,6 +181,31 @@ public class PayrollService {
 
         } catch (PayrollServiceException e) {
             e.printStackTrace();
+        }
+        String gender = "M"; // Gender for which to retrieve salary statistics
+
+        try {
+            // Retrieve and print the sum of salaries by gender
+            double sumOfSalaries = payrollService.getSumOfSalariesByGender(gender);
+            System.out.println("Sum of salaries for gender " + gender + ": " + sumOfSalaries);
+
+            // Retrieve and print the average salary by gender
+            double averageSalary = payrollService.getAverageSalaryByGender(gender);
+            System.out.println("Average salary for gender " + gender + ": " + averageSalary);
+
+            // Retrieve and print the minimum salary by gender
+            double minimumSalary = payrollService.getMinimumSalaryByGender(gender);
+            System.out.println("Minimum salary for gender " + gender + ": " + minimumSalary);
+
+            // Retrieve and print the maximum salary by gender
+            double maximumSalary = payrollService.getMaximumSalaryByGender(gender);
+            System.out.println("Maximum salary for gender " + gender + ": " + maximumSalary);
+
+            // Retrieve and print the count of employees by gender
+            int employeeCount = payrollService.getEmployeeCountByGender(gender);
+            System.out.println("Employee count for gender " + gender + ": " + employeeCount);
+        } catch (PayrollServiceException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }
